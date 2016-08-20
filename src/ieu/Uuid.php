@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace ieu\Types;
+namespace ieu;
 
 /**
  * Provides a UUID type. Currently only version 4 is implemented,
