@@ -23,6 +23,8 @@ namespace ieu;
 
 class Uuid {
 
+	const PATTERN = '/^[0-9a-f]{8}-[0-9a-f]{4}-([1-5])[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i';
+
 	/**
 	 * The UUID
 	 * @var string
@@ -38,14 +40,26 @@ class Uuid {
 	
 	private $version;
 
-	public function __construct($id, $version)
+	public function __construct($id)
 	{
-		if (!self::valid($id, $version)) {
-			throw new \Exception(sprintf('The given ID \'%s\' is not a valid UUID of version %s', $id, $version));
+		$id = (string) $id;
+
+		if (0 === preg_match(self::PATTERN, $id, $matches)) {
+			throw new \Exception(sprintf('The given ID \'%s\' is not a valid UUID', $id));
 		}
 
 		$this->id = $id;
-		$this->version = $version;
+		$this->version = $matches[1];
+	}
+
+	public function equals(Uuid $id)
+	{
+		return $this->id === (string) $id;
+	}
+
+	public function getVersion()
+	{
+		return $this->version;
 	}
 
 	public function __toString()
@@ -79,29 +93,18 @@ class Uuid {
 
 
 	/**
-	 * Validates a UUID against a given version.
+	 * Validates a UUID.
 	 *
-	 * @throws \InvalidArgumentException 
-	 *    If the given version is unknown/not supported
-	 * 
 	 * @param  string  $id
 	 *    The UUID to test
-	 * @param  integer $version
-	 *    The version the UUID must conform
 	 *
 	 * @return boolean
 	 *    Wether or not the UUID is valid
 	 */
 	
-	public static function valid($id, $version = 4)
+	public static function valid($id)
 	{
-		$uuid = (string)$id;
-
-		switch($version) {
-			case 4: return 1 === preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i', $id);
-		}
-
-		throw new \InvalidArgumentException(sprintf('Unknown UUID version %s', $version));
+		return 0 !== preg_match(self::PATTERN, (string)$id);
 	}
 
 
@@ -133,6 +136,6 @@ class Uuid {
 			mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
 		);
 
-		return $object ? new self($id, 4) : $id;
+		return $object ? new self($id) : $id;
 	}
 }
